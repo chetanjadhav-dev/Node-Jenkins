@@ -1,19 +1,38 @@
 const { Sequelize, DataTypes } = require('sequelize');
-require('dotenv').config()
-const db_url = process.env.POSTGRES_URL
-const sequelize = new Sequelize(db_url);
+require('dotenv').config();
+
+const db_url = process.env.POSTGRES_URL;
+
+const sequelize = new Sequelize(db_url, {
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false // Adjust based on your SSL setup
+        }
+    }
+});
 
 async function checkConnection() {
     try {
         await sequelize.authenticate();
-        console.log('Database connected successfully. ' + db_url);
+        console.log('Database connected successfully.');
     } catch (error) {
-        console.error('Unable to connect to the database:', error);
+        console.error('Unable to connect to the database:', error.message);
+        console.error('Full error:', error);
         process.exit(1); // Exit process with failure code
     }
 }
 
-checkConnection();
+async function syncModels() {
+    try {
+        await sequelize.sync();
+        console.log('Models synchronized successfully.');
+    } catch (error) {
+        console.error('Error synchronizing models:', error);
+    }
+}
+
+checkConnection().then(syncModels);
 
 // Define the InstagramProfile model
 const InstagramProfile = sequelize.define('InstagramProfile', {
@@ -58,7 +77,7 @@ const InstagramPost = sequelize.define('InstagramPost', {
     profile_id: {
         type: DataTypes.STRING,
         references: {
-            model: 'instagram_instagramprofile',
+            model: InstagramProfile,
             key: 'username'
         }
     }
