@@ -9,9 +9,9 @@ const port = process.env.SERVER_PORT; // Change to your preferred port
 app.use(express.json());
 
 // Search API with range
-app.get('/posts', async (req, res) => {
+app.get('/:profileId', async (req, res) => {
     const { startId, endId } = req.query;
-
+    const profileId = req.params.profileId
     if (!startId || !endId) {
         return res.status(400).json({ error: 'startId and endId are required' });
     }
@@ -19,10 +19,11 @@ app.get('/posts', async (req, res) => {
     try {
         const posts = await InstagramPost.findAll({
             where: {
-                id: {
-                    [Sequelize.Op.between]: [parseInt(startId, 10), parseInt(endId, 10)]
-                }
-            }
+                profile_id: profileId // Filter by profile_id
+            },
+            order: [['id', 'ASC']], // Order by id ascending
+            limit: endId, // Limit the number of results
+            offset: startId // Skip the first result
         });
 
         res.json(posts);
