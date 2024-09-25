@@ -10,10 +10,10 @@ app.use(express.json());
 
 // Search API with range
 app.get('/:profileId', async (req, res) => {
-    const { startId, endId } = req.query;
+    const { start, end } = req.query;
     const profileId = req.params.profileId
-    if (!startId || !endId) {
-        return res.status(400).json({ error: 'startId and endId are required' });
+    if (!start || !end) {
+        return res.status(400).json({ error: 'start and end are required' });
     }
 
     try {
@@ -22,8 +22,8 @@ app.get('/:profileId', async (req, res) => {
                 profile_id: profileId // Filter by profile_id
             },
             order: [['id', 'ASC']], // Order by id ascending
-            limit: endId, // Limit the number of results
-            offset: startId // Skip the first result
+            limit: end, // Limit the number of results
+            offset: start // Skip the first result
         });
 
         res.json(posts);
